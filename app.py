@@ -1,29 +1,27 @@
-from fastapi import FastAPI, HTTPException
-from fastapi import Security
+from fastapi import FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel
 from pathlib import Path
 from collections import defaultdict
-from dotenv import load_dotenv
-import ipaddress, os
+import ipaddress
+import os
 
-load_dotenv()  # pulls BOTGUARD_API_KEY and BETA_LIMIT from .env
+# ----- CONFIG -----
+BLOCKLIST_FILE = Path("blocklist.txt")
+API_KEY = os.getenv("BOTGUARD_API_KEY", "test-key")
+        # <- read exactly this env var
+BETA_LIMIT = int(os.getenv("BETA_LIMIT", "5"))
+# -------------------
 
 app = FastAPI(
     title="Bot Guard Pro",
     swagger_ui_parameters={"persistAuthorization": True},
 )
 
-# ====== CONFIG ======
-BLOCKLIST_FILE = Path("blocklist.txt")
-API_KEY = os.getenv("BOTGUARD_API_KEY", "test-key")
-BETA_LIMIT = int(os.getenv("BETA_LIMIT", "5"))
-# ====================
-
-# Declare API Key security (this makes the Swagger "Authorize" button appear)
+# Security header (shows "Authorize" in Swagger)
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-# simple per-key in-memory usage counter (resets on restart)
+# in-memory per-key usage (resets on restart)
 usage = defaultdict(int)
 
 class TrafficLog(BaseModel):
@@ -46,10 +44,13 @@ def is_blocked(ip: str) -> bool:
     try:
         ipaddress.ip_address(ip)
     except ValueError:
+        # invalid IP → treat as blocked
         return True
     return ip in BLOCKED_IPS
 
 def require_key(x_api_key: str | None):
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="Server API key not configured")
     if not x_api_key or x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
     if usage[x_api_key] >= BETA_LIMIT:
@@ -79,5 +80,17 @@ def reload_blocklist(x_api_key: str | None = Security(api_key_header)):
 @app.get("/usage")
 def get_usage(x_api_key: str | None = Security(api_key_header)):
     require_key(x_api_key)
-    usage[x_api_key] -= 1  # don’t charge for checking usage
-    return {"used": usage[x_api_key], "limit": BETA_LIMIT}
+    return {"used": usage.get(x_api_key, 0), "limit": BETA_LIMIT}
+
+@app.post("/reset_usage")
+def reset_usage(x_api_key: str | None = Security(api_key_header)):
+    # Only owner (you) can reset usage counters
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Not allowed")
+    usage.clear()
+    return {"message": "Usage counters reset to 0"}
+
+# (Optional) Quick debug endpoint to confirm header receipt
+@app.get("/whoami")
+def whoami(x_api_key: str | None = Security(api_key_header)):
+    return {"received_header": x_api_key, "server_has_api_key": bool(API_KEY)}
