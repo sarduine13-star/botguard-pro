@@ -1,5 +1,5 @@
 [
   { "tier": "free",  "key": "free-key",  "limit": 25 },
-  { "tier": "pro",   "key": "pro-key",   "limit": 500 },
-  { "tier": "elite", "key": "elite-key", "limit": 1000000000 }
+  { "tier": "pro",   "key": "pro-key",   "limit": 20000 },
+  { "tier": "elite", "key": "elite-key", "limit": 0 }
 ]
