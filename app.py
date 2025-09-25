@@ -109,9 +109,8 @@ def get_usage(x_api_key: str | None = Security(api_key_header)):
 
 @app.post("/reset_usage")
 def reset_usage(x_api_key: str | None = Security(api_key_header)):
-    info = require_key(x_api_key)
-    # only elite can reset (example policy)
-    if info["tier"] != "elite":
+    key_info = find_key_info(x_api_key)
+    if not key_info or key_info["tier"] != "owner":
         raise HTTPException(status_code=403, detail="Not allowed")
     usage.clear()
     return {"message": "Usage counters reset to 0"}
@@ -120,3 +119,9 @@ def reset_usage(x_api_key: str | None = Security(api_key_header)):
 def whoami(x_api_key: str | None = Security(api_key_header)):
     info = find_key_info(x_api_key)
     return {"received_header": (x_api_key or ""), "recognized": bool(info), "tier": info["tier"] if info else None}
+[
+  { "tier": "free",  "key": "free-key",  "limit": 25 },
+  { "tier": "pro",   "key": "pro-key",   "limit": 500 },
+  { "tier": "elite", "key": "elite-key", "limit": 1000000000 },
+  { "tier": "owner", "key": "OWNER123",  "limit": 999999 }
+]
