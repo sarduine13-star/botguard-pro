@@ -4,6 +4,11 @@ from pydantic import BaseModel
 from pathlib import Path
 from collections import defaultdict
 import ipaddress, os, json
+from pathlib import Path
+import json  # if not already imported
+
+BASE_DIR = Path(__file__).resolve().parent
+KEYS_FILE = BASE_DIR / "keys.json"   # <— use absolute path next to app.py
 
 # ----- CONFIG -----
 BLOCKLIST_FILE = Path("blocklist.txt")
@@ -119,9 +124,10 @@ def reset_usage(x_api_key: str | None = Security(api_key_header)):
 def whoami(x_api_key: str | None = Security(api_key_header)):
     info = find_key_info(x_api_key)
     return {"received_header": (x_api_key or ""), "recognized": bool(info), "tier": info["tier"] if info else None}
+
 [
   { "tier": "free",  "key": "free-key",  "limit": 25 },
-  { "tier": "pro",   "key": "pro-key",   "limit": 500 },
-  { "tier": "elite", "key": "elite-key", "limit": 1000000000 },
+  { "tier": "pro",   "key": "pro-key",   "limit": 20000 },
+  { "tier": "elite", "key": "elite-key", "limit": 0 },
   { "tier": "owner", "key": "OWNER123",  "limit": 999999 }
 ]
