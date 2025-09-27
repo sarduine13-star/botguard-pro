@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: bot-guard-pro
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: KEYS_FILE
+        value: /app/keys.json
