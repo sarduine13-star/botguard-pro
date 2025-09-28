@@ -1,7 +1,4 @@
-
-[
-  { "tier": "free",  "key": "free-key",  "limit": 25 },
-  { "tier": "pro",   "key": "pro-key",   "limit": 20000 },
-  { "tier": "elite", "key": "elite-key", "limit": 0 },
-  { "tier": "owner", "key": "OWNER123",  "limit": 999999 }
-]
+git rm -r --cached .
+git add .
+git commit -m "Clean repo with .gitignore"
+git push

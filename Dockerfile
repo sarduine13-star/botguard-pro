@@ -1,15 +1,25 @@
+FROM python:3.13-slim
 
-
-FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app
 
-# Use the Render-assigned port
-EXPOSE 10000
+RUN useradd -m appuser
+USER appuser
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT"]
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -fsS http://127.0.0.1:${PORT:-10000}/health || exit 1
+
+EXPOSE 10000
+ENV PORT=10000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "${PORT}"]
