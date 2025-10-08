@@ -1,0 +1,21 @@
+- id: "block_bad_ips"
+  when:
+    any:
+      - { field: "ip", op: "in_cidr", value: "10.0.0.0/8" }
+      - { field: "message", op: "contains_any", value: ["attack", "sql", "scan"] }
+  threshold: 2
+  window_secs: 60
+  action:
+    severity: "high"
+    channel: "console"
+
+- id: "failed_logins"
+  when:
+    all:
+      - { field: "source", op: "equals", value: "auth-service" }
+      - { field: "message", op: "contains", value: "failed login" }
+  threshold: 3
+  window_secs: 120
+  action:
+    severity: "medium"
+    channel: "console"

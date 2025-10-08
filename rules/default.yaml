@@ -1,0 +1,44 @@
+# Block bad IPs
+- id: "block_bad_ips"
+  when:
+    any:
+      - { field: "ip", op: "in_cidr", value: "10.0.0.0/8" }
+      - { field: "message", op: "contains_any", value: ["attack", "sql", "scan"] }
+  threshold: 2
+  window_secs: 60
+  action:
+    severity: "high"
+    channel: "console"
+
+# Block repeated failed logins
+- id: "failed_logins"
+  when:
+    all:
+      - { field: "source", op: "equals", value: "auth-service" }
+      - { field: "message", op: "contains", value: "failed login" }
+  threshold: 3
+  window_secs: 60
+  action:
+    severity: "high"
+    channel: "console"
+
+# Block known bad IP ranges
+- id: "bad_ip_range"
+  when:
+    any:
+      - { field: "ip", op: "in_cidr", value: "192.168.66.0/24" }
+      - { field: "ip", op: "in_cidr", value: "10.0.99.0/24" }
+  action:
+    severity: "medium"
+    channel: "console"
+
+# Block SQL injection attempts
+- id: "sql_injection"
+  when:
+    any:
+      - { field: "message", op: "contains_any", value: ["SELECT", "DROP", "UNION", "INSERT", "UPDATE"] }
+  threshold: 1
+  window_secs: 30
+  action:
+    severity: "critical"
+    channel: "console"
