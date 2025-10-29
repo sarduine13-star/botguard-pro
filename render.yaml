@@ -10,3 +10,18 @@ services:
         value: 10000
       - key: KEYS_FILE
         value: /app/keys.json
+services:
+  - type: web
+    name: raina-agent
+    runtime: python
+    region: virginia
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    autoDeploy: true
+    plan: starter
+
+# Auto-restart once daily at 4 AM (US Virginia time)
+cron:
+  - name: daily_restart
+    schedule: "0 4 * * *"
+    command: "render deploy --service raina-agent"
