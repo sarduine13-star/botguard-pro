@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Global Styles --- */
+body {
+  @apply bg-dark text-white font-sans antialiased;
+}
+
+/* Hero section glow */
+.hero-text {
+  background: linear-gradient(90deg, #00a6ff, #00ff8c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Button */
+.btn {
+  @apply bg-primary text-black font-semibold px-6 py-3 rounded-lg hover:bg-neon transition duration-200;
+}
+
+/* Wheel modal */
+.wheel-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50;
+}
+
+.wheel-container {
+  @apply bg-gray-900 p-8 rounded-2xl shadow-2xl text-center;
+}
+
+/* Inputs */
+input,
+textarea {
+  @apply w-full bg-gray-800 border border-gray-700 rounded-md p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary;
+}
